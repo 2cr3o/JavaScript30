@@ -16,59 +16,134 @@
     </div>
 
 
-  <style>
-    html {
-      background: #018DED url(https://unsplash.it/1500/1000?image=881&blur=5);
-      background-size: cover;
-      font-family: 'helvetica neue';
-      text-align: center;
-      font-size: 10px;
-    }
+<style>
+  html {
+    background: url(/img/patrick-tomasso-GXXYkSwndP4-unsplash.jpg);
+    background-size: cover;
+    font-size: 12px;
+  }
 
-    body {
-      margin: 0;
-      font-size: 2rem;
-      display: flex;
-      flex: 1;
-      min-height: 100vh;
-      align-items: center;
-    }
+  body {
+    margin: 0;
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+  }
 
-    .clock {
-      width: 30rem;
-      height: 30rem;
-      border: 20px solid white;
-      border-radius: 50%;
-      margin: 50px auto;
-      position: relative;
-      padding: 2rem;
-      box-shadow:
-        0 0 0 4px rgba(0,0,0,0.1),
-        inset 0 0 0 3px #EFEFEF,
-        inset 0 0 10px black,
-        0 0 10px rgba(0,0,0,0.2);
-    }
+  .clock {
+    width: 30rem;
+    height: 30rem;
+    border: 20px solid #ffdab9;
+    border-radius: 50%;
+    margin: 50px auto;
+    padding: 2rem;
+    box-shadow: /* box-shadowの値を重ねて、立体的に描画する */
+      0 0 0 4px rgba(0,0,0,0.1),
+      inset 0 0 0 3px #ffc9a8,
+      inset 0 0 10px black,
+      0 0 10px rgba(0,0,0,0.2);
+  }
 
-    .clock-face {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      transform: translateY(-3px); /* account for the height of the clock hands */
-    }
+  .clock-face {
+    width: 100%;
+    height: 100%;
+    transform: translateY(-3px); /* account for the height of the clock hands */
+  }
 
-    .hand {
-      width: 50%;
-      height: 6px;
-      background: black;
-      position: absolute;
-      top: 50%;
-    }
+  .hand {
+    width: 50%;
+    height: 8px;
+    background: #e6a063;
+    position: absolute;
+    top: 50%;
+    border-radius: 4px;
+    box-shadow: 
+    inset 0 0 3px 0 #c98244,
+    0 0 3px 0 rgba(255, 255, 255, 0.15) ;
+    transform-origin: 100%; /* 1 */
+    transform: rotate(90deg); /* 2 */
+    transition: all 0.05s; /* 3 */
+    transition-timing-function: cubic-bezier(0.23, 1, 0.320, 1); /* 4 */
+  }
 
-  </style>
+/*
+【Description】
 
-  <script>
+1.  回転の重心を端に寄せる ex) 0% => 左端 50% => 中心 100% => 右端
+2.  時計の針の角度を0時 0分 0秒に初期設定する
+3.  対応するプロパティ名(今回はtransform: rotate(Xdeg)) と transformに掛かる時間(s)を設定する
+4.  イージングの設定をする 好きなものに設定可能
 
+注) 今回はbox-shadowやbackground-color,background-imageも変えています。
 
-  </script>
+*/
+
+</style>
+  
+<script>
+'use strict';
+// 1
+const SEC_HAND = document.querySelector('.second-hand');
+const MIN_HAND = document.querySelector('.min-hand');
+const HOUR_HAND = document.querySelector('.hour-hand');
+
+let setDate = () => {
+  const NOW = new Date(); // 2
+  
+  //sec
+  const SECS = NOW.getSeconds(); // 3
+  const SEC_DEGREES = ((SECS / 60) * 360) + 90; // 4
+  SEC_HAND.style.transform = `rotate(${SEC_DEGREES}deg)`; // 5
+  
+  //min
+  const MINS = NOW.getMinutes(); // 6
+  const MIN_DEGREES = ((MINS / 60) * 360) + 90; // 7
+  MIN_HAND.style.transform = `rotate(${MIN_DEGREES}deg)`; // 8
+
+  //hour
+  const HOUR = NOW.getHours(); // 9
+  const HOUR_DEGREES = ((HOUR / 12) * 360) + 90; // 10
+  HOUR_HAND.style.transform = `rotate(${HOUR_DEGREES}deg)`; // 11
+}
+
+setInterval(setDate, 1000); // 12
+setDate(); // 13
+
+/**
+【Description】
+
+Grobal Scope
+1.  clockの子要素のそれぞれの針(class="xxx-hand")を取得して,それぞれの定数に代入 
+    (cssのtransformプロパティの更新はここを対象にするため)
+
+SetDate
+2.  (new演算子+コンストラクタメソッドで)Dateオブジェクトのインスタンスを生成し,定数NOWに代入
+
+sec
+3.  定数NOWのDateオブジェクトのgetSecondsメソッドで,現在時刻の秒(s)を取得し,定数SECSに代入
+4.  秒針の角度を求める 
+    計算式は = (現在時刻の秒(s) / 60(s) * 360(deg)) + 90(deg) 
+    (このときの+90degはcssで90degが足されているため)
+5.  Elementオブジェクトのsyleプロパティから、cssのtransformプロパティを指定しSEC_DEGREESの角度を代入
+
+(min, hourも同様)
+min
+6.  定数NOWのDateオブジェクトのgetMinutesメソッドで、現在時刻の分(min)を取得し、定数MINSに代入
+7.  分針の角度を求める
+    計算式は = (現在時刻の分(min) / 60(min)* 360(deg))  + 90(deg) 
+8.  Elementオブジェクトのsyleプロパティから、cssのtransformプロパティを指定しMIN_DEGREESの角度を代入
+
+hour
+9.  定数NOWのDateオブジェクトのgetHoursメソッドで、現在時刻の時(h)を取得し、定数HOURSに代入
+10. 時針の角度を求める 計算式は = (現在時刻の秒(s) / 12(s) * 360(deg)) + 90(deg) 
+11. Elementオブジェクトのsyleプロパティから、cssのtransformプロパティを指定しHOUR_DEGREESの角度を代入
+
+Grobal Scope
+12. 1000ms毎にsetDate関数を実行する
+13. setDate関数を呼び出す
+
+*/
+
+</script>
 </body>
 </html>
