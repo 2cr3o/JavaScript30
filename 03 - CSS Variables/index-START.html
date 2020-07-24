@@ -18,34 +18,113 @@
     <input id="base" type="color" name="base" value="#ffc600">
   </div>
 
-  <img src="https://source.unsplash.com/7bwQXzbF6KE/800x500">
+  <img src="img/alice-dietrich-FwF_fKj5tBo-unsplash.jpg" width="800" height="auto">
 
-  <style>
+<!-- 
+[Description]
 
-    /*
-      misc styles, nothing to do with CSS variables
-    */
+1)  inputタグのrange属性は,大まかな値の幅を取得するためのコンポーネント
+2)  inputタグのcolor属性は,カラーパレットでRGBカラーを取得するためのコンポーネント
+3)  name属性やvalue属性は,のちにJSでthis.name,this.valueと指定して
+    取得するので覚えておくこと
+4)  min, max属性はvalueが取りうる値の最小値と最大値を指定している
+5)  data-sizing属性は、datasetのプロパティとして後にアクセスするためのキー
 
-    body {
-      text-align: center;
-      background: #193549;
-      color: white;
-      font-family: 'helvetica neue', sans-serif;
-      font-weight: 100;
-      font-size: 50px;
-    }
+-->
 
-    .controls {
-      margin-bottom: 50px;
-    }
 
-    input {
-      width: 100px;
-    }
-  </style>
+<style>
+  :root { /* 1 */
+    --base: #ffc600;
+    --spacing: 10px;
+    --blur: 10px;
+  }
 
-  <script>
-  </script>
+  img { /* 2 */
+    padding: var(--spacing);
+    background: var(--base);
+    filter: blur(var(--blur));
+  }
+
+  .hl { /* 3 */
+    color: var(--base);
+  }
+
+/*
+[Description]
+
+1.  :rootはグローバル変数を定義するための疑似クラス
+    定義するためには [--プロパティ名: 値] とする
+2.  変数の値を呼び出す際は、 var(--変数名) とする
+3.  h1クラスはh2タグのspanタグ(JS)に適用されているため
+    input属性のtype="color"のvalueが変わると、この値も変わる
+
+*/
+
+  /*
+    misc styles, nothing to do with CSS variables
+  */
+
+  body {
+    text-align: center;
+    background: #193549;
+    color: white;
+    font-family: 'helvetica neue', sans-serif;
+    font-weight: 100;
+    font-size: 50px;
+  }
+
+  .controls {
+    margin-bottom: 50px;
+  }
+
+  input {
+    width: 100px;
+  }
+</style>
+
+<script>
+const INPUTS = document.querySelectorAll('.controls input');
+
+function handleUpdate() {  // 2
+  const SUFFIX = this.dataset.sizing || ""; // 3
+  document.documentElement.style.setProperty(`--${this.name}`, this.value + SUFFIX); // 4
+  console.log(this, SUFFIX, document.documentElement.style, this.name, this.value);
+}
+
+INPUTS.forEach(input => input.addEventListener('change', handleUpdate));  // 5
+INPUTS.forEach(input => input.addEventListener('mousemove', handleUpdate)); // 6
+
+
+/**
+[Description]
+
+1.  querySelectorAllメソッドで該当するElementオブジェクトを
+    NodeListオブジェクト(列挙可能な配列)に格納し定数INPUTSに代入
+2.  (1)で取得したオブジェクトにイベントが発生したときに呼び出される
+    handleUpdate関数を定義する
+3.  イベント発生元の要素のdatasetのsizingプロパティを取得
+    または 空白文字列 ''を定数SUFFIXに代入する
+4.  setPropertyメソッドは、引数に(propertyName, value, priority)を取る (priority=詳細度は今回省略する)
+    ここでは CSSStyleDeclarationという連想配列にpropertyNameとvalueを登録しスタイルを上書きする
+    試しに,demoのコメントを外してコンソールを確認してみよう
+    そこには、0: "--spacing" 1: "--blur" 2: "--base"と登録されているのが確認できる
+5.  配列定数INPUTSの各要素にaddEventListenerを付与し, changeイベント発火時に、handleUpdateを呼び出す
+6.  (5)と同様にmousemove時にもhandleUpdateを適用する(value属性の数値を常に追いたいので)
+
+[Supplement]
+
+2.  handleUpadateはfunction命令の書き方ではなく
+    関数リテラル let function = funcの形だとthis.value === undefinedになるので注意すること
+3.  ここであえて[ || ""]を付け足すのは、type="color"のinput要素にはdata-sizing属性が付与されていないため
+    これを書かないと,type="color"のinput要素のイベント発火で関数を呼び出したとき、定数SUFFIXはundefinedになる
+4.  handleUpdate関数内のthisはイベントが発火したElementオブジェクトのこと
+    上記でも説明したように, this.nameはinputのname属性, this.valueはvalue属性を取得する 
+    document.documentElementは<html>~</html>を返す
+
+
+*/
+</script>
 
 </body>
 </html>
