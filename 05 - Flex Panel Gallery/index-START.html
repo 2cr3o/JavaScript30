@@ -26,6 +26,7 @@
     .panels {
       min-height: 100vh;
       overflow: hidden;
+      display: flex; /* panelsの子要素を縦並びから横並びにする */
     }
 
     .panel {
@@ -43,6 +44,12 @@
       font-size: 20px;
       background-size: cover;
       background-position: center;
+      /* panelの要素の並び方を整える */
+      flex: auto; /* 要素の伸縮の幅を決定する */
+      justify-content: center; /* 横方向の高さを中央揃えにする */
+      display: flex; /* それぞれのp要素を横に並べる */
+      flex-direction: column; /* 要素の並び方を縦方向にする */
+      cursor: pointer; /* 個人的にカーソルが気になったので変更 */
     }
 
     .panel1 { background-image:url(https://source.unsplash.com/gYl-UtwNg_I/1500x1500); }
@@ -56,7 +63,22 @@
       margin: 0;
       width: 100%;
       transition: transform 0.5s;
+      /* border: 1px solid red;  */
+      /* panel内の子要素のレイアウトを整える */
+      flex: 1 0 auto; /* 縦方向の要素の伸縮を整える */
+      display: flex; /* display:blockからflexにすることで中央揃えをしやすくする */
+      justify-content: center; /* 横方向の中央揃え */
+      align-items: center; /* 縦方向の中央揃え */
     }
+
+    /* first, lastのp要素の初期状態 */
+    .panel > *:first-child {transform: translateY(-100%);} /* panel内の最初のp要素をwindowから外す */
+    .panel > *:last-child {transform: translateY(100%);} /* panel内の最後のp要素をwindowから外す */
+    
+    /* panelActive関数で実行されるアニメーションの内容 */
+    .panel.open-active > *:first-child,
+    .panel.open-active > *:last-child {transform: translateY(0);} /* jsでopen-activeクラスがpanelに付与されたときに文字がアニメーションする */
+    
 
     .panel p {
       text-transform: uppercase;
@@ -69,8 +91,15 @@
       font-size: 4em;
     }
 
-    .panel.open {
+    .panel.open { /* panelOpen関数で実行されるアニメーションの内容 */
+      flex: 5;
       font-size: 40px;
+    }
+
+    @media only screen and (max-width: 600px){
+      .panel p {
+        font-size: 1em;
+      }
     }
 
   </style>
@@ -105,7 +134,44 @@
   </div>
 
   <script>
+    const PANELS = document.querySelectorAll('.panel'); // 1
 
+    function panelOpen() {  // 5
+      console.log(this.classList); // 6
+      this.classList.toggle('open'); // 7
+    }
+
+    function panelActive(e){ // 8
+      console.log(e.propertyName); // 9
+      if(e.propertyName.includes('flex')){ // 10
+        this.classList.toggle('open-active'); // 11
+      }
+    }
+    // 2
+    PANELS.forEach(panel => panel.addEventListener('click', panelOpen)); // 3
+    PANELS.forEach(panel => panel.addEventListener('transitionend', panelActive)); // 4
+  
+  /**
+   * Grobal Scope
+   * 1.  panelクラスの要素をすべて取得してNodeListオブジェクトとして、定数PANELSに代入する
+   * 2.  NodeListオブジェクトから各要素を取得し、以下の関数で処理する
+   * 3.  panel要素がclickイベントを発火したときにpanelOpenメソッドを実行する => panelOpen関数へ
+   * 4.  panel要素がtransitionendイベントを発火したときにpanelActiveメソッドを実行する => panelActive関数へ
+   * 
+    * panelOpen関数
+    * 5. 各panel要素がclickイベントを発火したときに呼び出される
+    * 6. panel要素のclassListプロパティをコンソールに出力する
+    * 7. DOMTokenList内にopenクラスがなければadd,あればremoveする => cssセレクタ― openへ
+   * 
+    * panelActive関数
+    * 8. 各panel要素がtransitionendイベントを発火したときに呼び出される
+    * 9. TransitionEventオブジェクトのpropertyNameを取得してコンソールに出力する
+    * 10.TranstionEventオブジェクトのpropertyNameがflexを含んでいるかどうかで処理分岐する
+    * 11.flexを含んでいた場合, open-activeクラスがあるかどうかを判定し付けたり外したりする
+   * 
+   * 
+  */
+  
   </script>
 
 
